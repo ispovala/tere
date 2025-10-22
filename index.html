@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis Social Media - Café de Tere</title>
+    <style>
+        /* ========== VARIABLES Y RESET ========== */
+        :root {
+            --color-primary: #6F4E37;
+            --color-primary-light: #A0826D;
+            --color-secondary: #98D8C8;
+            --color-accent: #F5E6D3;
+            --color-white: #FFFFFF;
+            --color-bg: #F5F5F5;
+            --color-text: #333333;
+            --color-text-light: #666666;
+            --color-success: #28A745;
+            --color-danger: #DC3545;
+            --color-warning: #FFC107;
+            --spacing-xs: 8px;
+            --spacing-sm: 16px;
+            --spacing-md: 24px;
+            --spacing-lg: 32px;
+            --spacing-xl: 48px;
+            --border-radius: 8px;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.08);
+            --shadow-md: 0 2px 8px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Montserrat', 'Poppins', sans-serif;
+            font-weight: 700;
+            line-height: 1.2;
+            color: var(--color-primary);
+        }
+
+        h1 { font-size: 32px; }
+        h2 { font-size: 24px; margin-bottom: var(--spacing-sm); }
+        h3 { font-size: 20px; margin-bottom: var(--spacing-xs); }
+
+        /* ========== LAYOUT ========== */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--spacing-md);
+        }
+
+        .grid {
+            display: grid;
+            gap: var(--spacing-md);
+        }
+
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+        .grid-4 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+
+        /* ========== HEADER ========== */
+        .header {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+            color: var(--color-white);
+            padding: var(--spacing-lg) var(--spacing-md);
+            border-radius: var(--border-radius);
+            margin-bottom: var(--spacing-lg);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .header h1 {
+            color: var(--color-white);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .header-meta {
+            display: flex;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+            margin-top: var(--spacing-sm);
+            opacity: 0.9;
+        }
+
+        .header-meta span {
+            font-size: 14px;
+        }
+
+        /* ========== CARDS ========== */
+        .card {
+            background: var(--color-white);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        /* KPI Cards */
+        .kpi-card {
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--color-secondary), var(--color-primary-light));
+        }
+
+        .kpi-icon {
+            font-size: 32px;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .kpi-label {
+            font-size: 14px;
+            color: var(--color-text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .kpi-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .kpi-change {
+            font-size: 14px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .kpi-change.positive {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--color-success);
+        }
+
+        /* ========== CHART CONTAINERS ========== */
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: var(--spacing-sm);
+        }
+
+        .chart-container.small {
+            height: 300px;
+        }
+
+        .chart-container canvas {
+            max-width: 100%;
+            height: 100%;
+        }
+
+        /* ========== HEATMAP ========== */
+        .heatmap-container {
+            overflow-x: auto;
+            margin-top: var(--spacing-sm);
+        }
+
+        .heatmap {
+            display: grid;
+            gap: 2px;
+            min-width: 600px;
+        }
+
+        .heatmap-row {
+            display: grid;
+            grid-template-columns: 100px repeat(24, 1fr);
+            gap: 2px;
+        }
+
+        .heatmap-cell {
+            padding: 8px;
+            text-align: center;
+            font-size: 12px;
+            border-radius: 4px;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.1);
+            z-index: 10;
+            box-shadow: var(--shadow-md);
+        }
+
+        .heatmap-label {
+            background: var(--color-bg);
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .heatmap-header {
+            background: var(--color-primary);
+            color: var(--color-white);
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        /* ========== CORRELATION MATRIX ========== */
+        .corr-matrix {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+            margin-top: var(--spacing-sm);
+        }
+
+        .corr-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .corr-cell:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-md);
+        }
+
+        .corr-label {
+            background: var(--color-bg);
+            color: var(--color-text);
+            font-size: 10px;
+            padding: 4px;
+            text-align: center;
+            word-break: break-word;
+        }
+
+        /* ========== TWEET CARDS ========== */
+        .tweet-card {
+            border-left: 4px solid var(--color-secondary);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            background: var(--color-white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .tweet-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateX(4px);
+        }
+
+        .tweet-rank {
+            display: inline-block;
+            background: var(--color-primary);
+            color: var(--color-white);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-weight: 700;
+            font-size: 14px;
+            margin-right: var(--spacing-sm);
+        }
+
+        .tweet-text {
+            font-size: 15px;
+            margin-bottom: var(--spacing-sm);
+            color: var(--color-text);
+            line-height: 1.6;
+        }
+
+        .tweet-metrics {
+            display: flex;
+            gap: var(--spacing-md);
+            font-size: 13px;
+            color: var(--color-text-light);
+            flex-wrap: wrap;
+        }
+
+        .tweet-metric {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--color-bg);
+            padding: 4px 12px;
+            border-radius: 16px;
+        }
+
+        .tweet-metric strong {
+            color: var(--color-primary);
+            font-weight: 600;
+        }
+
+        /* ========== TOPIC CARDS ========== */
+        .topic-card {
+            border-top: 4px solid var(--color-primary);
+        }
+
+        .topic-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .topic-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .topic-title {
+            flex: 1;
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .topic-toggle {
+            font-size: 20px;
+            color: var(--color-text-light);
+            transition: var(--transition);
+        }
+
+        .topic-toggle.expanded {
+            transform: rotate(180deg);
+        }
+
+        .topic-detail {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: var(--spacing-sm);
+        }
+
+        .topic-detail.expanded {
+            max-height: 500px;
+        }
+
+        .topic-description {
+            font-size: 14px;
+            color: var(--color-text-light);
+            margin-bottom: var(--spacing-sm);
+            line-height: 1.6;
+        }
+
+        .topic-challenge {
+            background: var(--color-accent);
+            padding: var(--spacing-sm);
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--color-warning);
+            font-size: 14px;
+        }
+
+        .topic-challenge-label {
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: 4px;
+        }
+
+        .priority-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: var(--spacing-xs);
+        }
+
+        .priority-high {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--color-danger);
+        }
+
+        .priority-medium {
+            background: rgba(255, 193, 7, 0.1);
+            color: var(--color-warning);
+        }
+
+        .priority-low {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--color-success);
+        }
+
+        /* ========== CONCLUSION SECTION ========== */
+        .conclusion {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+            color: var(--color-white);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius);
+            margin-top: var(--spacing-lg);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .conclusion h2 {
+            color: var(--color-white);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .conclusion-text {
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .priority-list {
+            list-style: none;
+            counter-reset: priority-counter;
+        }
+
+        .priority-list li {
+            counter-increment: priority-counter;
+            margin-bottom: var(--spacing-sm);
+            padding-left: var(--spacing-lg);
+            position: relative;
+            font-size: 15px;
+        }
+
+        .priority-list li::before {
+            content: counter(priority-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 28px;
+            height: 28px;
+            background: var(--color-secondary);
+            color: var(--color-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        /* ========== STATS TABLE ========== */
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: var(--spacing-sm);
+            font-size: 14px;
+        }
+
+        .stats-table th {
+            background: var(--color-primary);
+            color: var(--color-white);
+            padding: var(--spacing-sm);
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .stats-table td {
+            padding: var(--spacing-sm);
+            border-bottom: 1px solid var(--color-bg);
+        }
+
+        .stats-table tr:hover {
+            background: var(--color-accent);
+        }
+
+        /* ========== TOOLTIP ========== */
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: var(--color-white);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            h1 { font-size: 24px; }
+            h2 { font-size: 20px; }
+            .kpi-value { font-size: 28px; }
+            .grid-3, .grid-4 { grid-template-columns: 1fr; }
+            .chart-container { height: 300px; }
+            .header-meta { flex-direction: column; gap: var(--spacing-xs); }
+        }
+
+        /* ========== LOADING ANIMATION ========== */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .section {
+            margin-bottom: var(--spacing-xl);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header class="header fade-in">
+            <h1>📊 Análisis de Conversación Social - Café de Tere</h1>
+            <div class="header-meta">
+                <span>📅 <strong>Total de Conversaciones:</strong> 1,199</span>
+                <span>🎯 <strong>Alcance Estimado:</strong> 6 Millones de personas</span>
+                <span>⚡ <strong>Actualizado:</strong> Octubre 2025</span>
+            </div>
+        </header>
+
+        <!-- EXECUTIVE SUMMARY -->
+        <section class="section">
+            <div class="card" style="border-left: 4px solid var(--color-secondary); background: linear-gradient(135deg, rgba(152, 216, 200, 0.1) 0%, rgba(255, 255, 255, 1) 100%);">
+                <h2>🎯 Resumen Ejecutivo</h2>
+                <p style="font-size: 16px; line-height: 1.8; color: var(--color-text); margin-top: var(--spacing-sm);">
+                    Tu marca genera <strong>alto volumen de conversación</strong> en redes sociales con una audiencia altamente comprometida. 
+                    Sin embargo, existe <strong>polarización</strong> en temas clave: precio, calidad y medios de pago. 
+                    Las oportunidades de mejora más críticas están en <strong>habilitar pagos digitales, estandarizar calidad y comunicar mejor tu propuesta de valor</strong>.
+                </p>
+            </div>
+        </section>
+
+        <!-- KPI CARDS -->
+        <section class="section">
+            <h2 style="margin-bottom: var(--spacing-md); color: var(--color-primary);">📊 Tu Marca en Números</h2>
+            <div class="grid grid-4">
+                <div class="card kpi-card fade-in">
+                    <div class="kpi-icon">💬</div>
+                    <div class="kpi-label">Conversaciones Totales</div>
+                    <div class="kpi-value">1,199</div>
+                    <span class="kpi-change positive">Alta visibilidad</span>
+                </div>
+                <div class="card kpi-card fade-in" style="animation-delay: 0.1s">
+                    <div class="kpi-icon">👥</div>
+                    <div class="kpi-label">Alcance Estimado</div>
+                    <div class="kpi-value">6.0M</div>
+                    <span class="kpi-change positive">Personas impactadas</span>
+                </div>
+                <div class="card kpi-card fade-in" style="animation-delay: 0.2s">
+                    <div class="kpi-icon">🔄</div>
+                    <div class="kpi-label">Compartidos (Promedio)</div>
+                    <div class="kpi-value">34</div>
+                    <span class="kpi-change positive">Por conversación</span>
+                </div>
+                <div class="card kpi-card fade-in" style="animation-delay: 0.3s">
+                    <div class="kpi-icon">❤️</div>
+                    <div class="kpi-label">Me Gusta (Promedio)</div>
+                    <div class="kpi-value">12</div>
+                    <span class="kpi-change positive">Por conversación</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- TOP TWEETS -->
+        <section class="section">
+            <div class="card fade-in">
+                <h2>🔥 Conversaciones con Mayor Impacto</h2>
+                <p style="font-size: 14px; color: var(--color-text-light); margin-bottom: var(--spacing-md);">
+                    Los tweets que generaron más engagement y amplificación de tu marca
+                </p>
+                <div id="topTweets"></div>
+            </div>
+        </section>
+
+        <!-- TEMPORAL HEATMAP -->
+        <section class="section">
+            <div class="card fade-in">
+                <h2>📅 ¿Cuándo Hablan de Ti?</h2>
+                <p style="font-size: 14px; color: var(--color-text-light); margin-bottom: var(--spacing-sm);">
+                    Identifica los días y horas con mayor conversación. Los números más altos (colores más oscuros) indican más actividad.
+                </p>
+                <div class="heatmap-container" id="heatmapContainer"></div>
+            </div>
+        </section>
+
+        <!-- TOPICS -->
+        <section class="section">
+            <h2 style="margin-bottom: var(--spacing-sm); color: var(--color-primary);">💡 ¿Qué Dicen de Tu Marca?</h2>
+            <p style="font-size: 15px; color: var(--color-text-light); margin-bottom: var(--spacing-md); line-height: 1.6;">
+                15 temas clave identificados en las conversaciones. Haz clic en cada tema para ver el análisis detallado y acciones recomendadas.
+            </p>
+            <div class="grid grid-3" id="topicsContainer"></div>
+        </section>
+
+        <!-- CONCLUSION -->
+        <section class="conclusion fade-in">
+            <h2>🎯 Conclusión Ejecutiva</h2>
+            <p class="conclusion-text" id="conclusionText"></p>
+            <h3 style="color: var(--color-white); margin-top: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+                Prioridades Tácticas
+            </h3>
+            <ul class="priority-list" id="priorityList"></ul>
+        </section>
+    </div>
+
+    <!-- TOOLTIP -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // ========== DATA LOADING ==========
+        const data = {
+            "describe_matrix": {"count": {"favorite_count": 1198.0, "id": 1199.0, "retweet_count": 1198.0, "user.followers_count": 1198.0, "user.friends_count": 1198.0}, "mean": {"favorite_count": 12.202003338898164, "id": 1.1909482828284088e+18, "retweet_count": 33.925709515859765, "user.followers_count": 5046.368948247078, "user.friends_count": 1021.626878130217}, "std": {"favorite_count": 104.53245995361105, "id": 3.4425044120617452e+16, "retweet_count": 815.0630495614117, "user.followers_count": 72793.23507864912, "user.friends_count": 6446.56499792927}, "min": {"favorite_count": 0.0, "id": 167.0, "retweet_count": 0.0, "user.followers_count": 1.0, "user.friends_count": 0.0}, "25%": {"favorite_count": 0.0, "id": 1.1918218393786122e+18, "retweet_count": 0.0, "user.followers_count": 186.5, "user.friends_count": 262.0}, "50%": {"favorite_count": 0.0, "id": 1.191929775016874e+18, "retweet_count": 0.0, "user.followers_count": 483.0, "user.friends_count": 532.5}, "75%": {"favorite_count": 2.0, "id": 1.192133212113404e+18, "retweet_count": 1.0, "user.followers_count": 1377.25, "user.friends_count": 992.75}, "max": {"favorite_count": 2733.0, "id": 1.192608404327547e+18, "retweet_count": 28090.0, "user.followers_count": 1997889.0, "user.friends_count": 221536.0}},
+            "corr_matrix": {"user.followers_count": {"user.followers_count": 1.0, "user.friends_count": 0.5770596319321523, "id": -0.14474055631145605, "favorite_count": 0.3743598815158741, "retweet_count": 0.1283469079000893}, "user.friends_count": {"user.followers_count": 0.5770596319321523, "user.friends_count": 1.0, "id": -0.09306009552025668, "favorite_count": 0.16383723344715007, "retweet_count": 0.05420889555106655}, "id": {"user.followers_count": -0.14474055631145605, "user.friends_count": -0.09306009552025668, "id": 1.0, "favorite_count": -0.1278758415977603, "retweet_count": 0.07590999064439975}, "favorite_count": {"user.followers_count": 0.3743598815158741, "user.friends_count": 0.16383723344715007, "id": -0.1278758415977603, "favorite_count": 1.0, "retweet_count": 0.1210178774154952}, "retweet_count": {"user.followers_count": 0.1283469079000893, "user.friends_count": 0.05420889555106655, "id": 0.07590999064439975, "favorite_count": 0.1210178774154952, "retweet_count": 1.0}},
+            "engagement_matrix": {"text": {"33": "@Cesar_Antonio_F @LivePalestina @Jou_Kaiser @tere_marinovic @elvillegaschile @sergioulloa1 @German69738375… https://t.co/0mgrQNJVrU", "3276": "@dearc26 @eluniversocom Q insoportable estas personas resentidas. Viven amargados! Hay gustos y gustos. El bolón de Tere es rico!", "3738": "Se acabó el chisme con el #closetdedav y ahora leo twists del #cafedetere... qué tiro guayaquileños todo bien en casa?", "2198": "@KaritoSoBsc Oe oe oe bien recuerdo que una vez twitteaste qué más barato Te salía comprar un departamento en salin… https://t.co/FL0MGZv9Hx", "1951": "La señora del café d Tere es la prueba de q trabajando duro se puede llegar a rico. Ella ha demostrado q no es nece… https://t.co/JMNbFy5KLS", "3608": "Cuando trabajaba en el parque Colón una vez quise ir al #cafedetere que hay ahí vi los precios y me parecieron dema… https://t.co/LP8o8NIHU6", "3992": "@ornella_soriano @_SantinoBoy @CafedeTere Que comentario tan regionalista... cabeza hueca que piensa que en la sier… https://t.co/cWBukqR7EM", "3457": "@tere_marinovic En esta crisis, no hay buenos ni malos, se enfrentan entre chilenos, padres y familias. Y todo este… https://t.co/CQsnaeEs8Z", "2148": "Si el cafe de tere te parece que es caro, turro y puro mkt anda busca otro bolon chtm. El ecuatoriano próspero tiene… https://t.co/APCz649NbZ", "932": "Soy cliente regular del Café de Tere. Ahora bien, que sigá sin aceptar tarjetas de crédito es indefendible. Doña Te… https://t.co/jHdbRXcdfa"}, "favorite_count": {"33": 10.0, "3276": 79.0, "3738": 10.0, "2198": 46.0, "1951": 332.0, "3608": 1.0, "3992": 1.0, "3457": 7.0, "2148": 187.0, "932": 130.0}, "retweet_count": {"33": 1.0, "3276": 1.0, "3738": 3.0, "2198": 3.0, "1951": 81.0, "3608": 0.0, "3992": 0.0, "3457": 3.0, "2148": 63.0, "932": 35.0}, "total_engagement": {"33": 250.0, "3276": 86.81318681318682, "3738": 66.66666666666666, "2198": 63.888888888888886, "1951": 61.141804788213626, "3608": 33.33333333333333, "3992": 33.33333333333333, "3457": 19.444444444444446, "2148": 15.583333333333332, "932": 13.30603889457523}},
+            "heatmap": {"Monday": {"0.0": -1.0, "1.0": -1.0, "2.0": -1.0, "3.0": 2.0, "4.0": -1.0, "5.0": 0.0, "6.0": -1.0, "7.0": -1.0, "8.0": -1.0, "9.0": -1.0, "10.0": 3.0, "11.0": -1.0, "12.0": -1.0, "13.0": 1.0, "14.0": 6.0, "15.0": 6.0, "16.0": -1.0, "17.0": 2.0, "18.0": 0.0, "19.0": -1.0, "20.0": 4.0, "21.0": -1.0, "22.0": -1.0, "23.0": 1.0}, "Tuesday": {"0.0": 2.0, "1.0": 0.0, "2.0": -1.0, "3.0": -1.0, "4.0": -1.0, "5.0": 1.0, "6.0": -1.0, "7.0": -1.0, "8.0": -1.0, "9.0": 2.0, "10.0": -1.0, "11.0": 1.0, "12.0": 2.0, "13.0": 5.0, "14.0": 5.0, "15.0": 7.0, "16.0": 4.0, "17.0": 4.0, "18.0": 1.0, "19.0": 6.0, "20.0": 3.0, "21.0": 1.0, "22.0": 3.0, "23.0": 2.0}, "Wednesday": {"0.0": 1.0, "1.0": -1.0, "2.0": -1.0, "3.0": -1.0, "4.0": -1.0, "5.0": -1.0, "6.0": -1.0, "7.0": -1.0, "8.0": 2.0, "9.0": -1.0, "10.0": -1.0, "11.0": 0.0, "12.0": 2.0, "13.0": 1.0, "14.0": 5.0, "15.0": 0.0, "16.0": 1.0, "17.0": -1.0, "18.0": 6.0, "19.0": 1.0, "20.0": 6.0, "21.0": 10.0, "22.0": 3.0, "23.0": 2.0}, "Thursday": {"0.0": 0.0, "1.0": 0.0, "2.0": -1.0, "3.0": -1.0, "4.0": -1.0, "5.0": -1.0, "6.0": -1.0, "7.0": -1.0, "8.0": -1.0, "9.0": -1.0, "10.0": 0.0, "11.0": 4.0, "12.0": 3.0, "13.0": 1.0, "14.0": 3.0, "15.0": 4.0, "16.0": 9.0, "17.0": 0.0, "18.0": 2.0, "19.0": 3.0, "20.0": 3.0, "21.0": 3.0, "22.0": 4.0, "23.0": 3.0}, "Friday": {"0.0": 3.0, "1.0": -1.0, "2.0": -1.0, "3.0": -1.0, "4.0": -1.0, "5.0": -1.0, "6.0": -1.0, "7.0": -1.0, "8.0": -1.0, "9.0": 0.0, "10.0": -1.0, "11.0": 0.0, "12.0": -1.0, "13.0": -1.0, "14.0": 8.0, "15.0": -1.0, "16.0": -1.0, "17.0": -1.0, "18.0": -1.0, "19.0": -1.0, "20.0": -1.0, "21.0": -1.0, "22.0": -1.0, "23.0": -1.0}, "Saturday": {"0.0": 5.0, "1.0": -1.0, "2.0": -1.0, "3.0": -1.0, "4.0": -1.0, "5.0": -1.0, "6.0": -1.0, "7.0": -1.0, "8.0": -1.0, "9.0": -1.0, "10.0": 11.0, "11.0": -1.0, "12.0": -1.0, "13.0": 0.0, "14.0": 0.0, "15.0": 5.0, "16.0": 2.0, "17.0": 8.0, "18.0": -1.0, "19.0": -1.0, "20.0": -1.0, "21.0": 0.0, "22.0": -1.0, "23.0": -1.0}, "Sunday": {"0.0": -1.0, "1.0": 0.0, "2.0": -1.0, "3.0": -1.0, "4.0": -1.0, "5.0": -1.0, "6.0": -1.0, "7.0": -1.0, "8.0": -1.0, "9.0": -1.0, "10.0": -1.0, "11.0": -1.0, "12.0": -1.0, "13.0": 7.0, "14.0": -1.0, "15.0": 0.0, "16.0": 0.0, "17.0": -1.0, "18.0": 1.0, "19.0": -1.0, "20.0": -1.0, "21.0": -1.0, "22.0": 0.0, "23.0": -1.0}},
+            "topics": {"topics": [{"title": "Precio y percepción de valor", "detail": "Fuerte polarización: para muchos es caro/sobrevalorado (bolón $3,5–$5, jugos hasta $8, extras como huevo $1, mínimos de delivery altos); otros justifican que se paga limpieza, local, marca y servicio.", "challenge": "Definir estrategia de precios y porciones (combos, tamaños, bolón popular en franjas), hacer transparente la propuesta de valor y costos, y ofrecer beneficios (lealtad, horas felices) para mejorar la ecuación valor/precio."}, {"title": "Calidad y consistencia del producto", "detail": "Opiniones dispares: normalito, perdió sazón/industrializado, tigrillo sopudo/insípido, bolón frío o muy salado, uso de lácteos excesivos o margarina vs otros que lo consideran excelente. Variabilidad entre locales.", "challenge": "Refinar y estandarizar recetas y procesos (temperatura, salado, grasas), auditorías sensoriales por local, KPIs de calidad en tiempo real y pilotos de receta clásico criollo vs sello Tere para reconciliar expectativas."}, {"title": "Medios de pago", "detail": "Reclamo recurrente por no aceptar tarjetas/datafast; fricción de usar solo efectivo; algunos declaran no volver por esta razón.", "challenge": "Habilitar POS, QR y billeteras; comunicar razones y fechas de implementación; incentivar pagos digitales con pequeños descuentos y reducir fuga de ventas."}, {"title": "Experiencia de servicio y operación en sala", "detail": "Limpieza muy valorada; críticas a autoservicio/recoger bandeja; colas; límites de ají por mesa; porciones percibidas como pequeñas vs precio; confort (A/C) inconsistente.", "challenge": "Rediseñar flujos (señalética, estaciones de bandejas), gestionar picos (pre-order/pick-up), revisar política de porciones/extras/ají, asegurar A/C y confort constantes."}, {"title": "Delivery y agregadores", "detail": "Molestia por mínimos a domicilio (p.ej. $17) y cuentas altas en apps con porciones pequeñas.", "challenge": "Replantear mínimos por zona/hora, crear combos exclusivos de delivery y negociar comisiones con apps para sostener porción y precio percibido."}, {"title": "Gestión de reputación y polarización social", "detail": "Conversación masiva lovers vs haters con connotaciones de clase (aniñado, resentido); al mismo tiempo orgullo por el caso de emprendimiento.", "challenge": "Social listening activo, protocolo de respuesta empática, contenidos que celebren inclusión y trabajo, voceros creíbles y activaciones que desactiven antagonismos (catas abiertas, visitas a cocina)."}, {"title": "Competencia y alternativas", "detail": "Se comparan frecuentemente con huecas y marcas (Aloha, Amorfino, Juan Tonga, mercados, Sauces, etc.) percibidas como más ricas o más baratas.", "challenge": "Benchmarking continuo, diferenciar por higiene, consistencia, conveniencia y experiencia; colaboraciones/ediciones limitadas y mejoras del ají como firma."}, {"title": "Portafolio y desarrollo de producto", "detail": "Estrellas: bolón mixto y tigrillo. El ají es muy apreciado. Críticas al café (bebida) y peticiones por jugo de bistec/sabor más criollo.", "challenge": "Ajustar tigrillo y café; ofrecer versiones tradicional y Tere; ampliar opciones (light/veg), estandarizar el ají y permitir recargas razonables."}, {"title": "Autenticidad culinaria vs estandarización", "detail": "Parte del público siente pérdida de esencia por industrialización y exceso de lácteos; otros valoran la estandarización y limpieza.", "challenge": "Recuperar preparaciones patrimoniales y técnicas (p. ej., jugo de bistec), comunicar origen y proveedores locales y balancear autenticidad con consistencia."}, {"title": "Expansión y escalabilidad", "detail": "Alta demanda por abrir en Sierra/Exterior; preocupación de que el crecimiento afecte el sabor; rumores de adquisiciones.", "challenge": "Modelo de expansión controlada (pilotos en Sierra), manuales operativos robustos, control de calidad centralizado y narrativa de crecimiento sin perder sazón."}, {"title": "Arquitectura de marca y posicionamiento", "detail": "Confusión habitual entre Café de Tere y Bolón de Tere; asociación casi exclusiva a bolón pese a un menú mayor.", "challenge": "Aclarar naming y ampliar el imaginario: campañas que destaquen más categorías (tigrillo, muchines, jugos), y storytelling del origen para fortalecer identidad."}, {"title": "Educación de mercado y pricing", "detail": "Debate sobre costos vs. precio, disposición a pagar por ambiente/servicio y definición del target (aspiracional vs. masivo).", "challenge": "Comunicar de forma didáctica qué incluye el precio (higiene, salarios, impuestos), ofrecer escalones de entrada y segmentar ofertas por ocasión y canal."}, {"title": "Seguridad alimentaria y salud", "detail": "Casos aislados de malestar y percepciones de grasoso; también menciones positivas de que no es muy grasoso.", "challenge": "Auditorías sanitarias visibles, mejoras en insumos (aceites/grasas), información nutricional básica y certificaciones exhibidas en sala y RRSS."}, {"title": "Ubicación, acceso y conveniencia", "detail": "Atributos valorados: cercanía al aeropuerto, parqueo y seguridad; colas desincentivan; horarios influyen en elección.", "challenge": "Optimizar capacidad en horas pico, habilitar pre-pago/pre-order, ventanillas express y señalizar parqueos/horarios de menor espera."}, {"title": "Aprovechamiento de la viralidad", "detail": "Tendencias y memes generaron publicidad gratis; percepción de que la marca no capitalizó del todo la ola.", "challenge": "Playbook de real time marketing, UGC, alianzas con creadores y activaciones temáticas cuando la marca sea tendencia; medición de lift y conversión."}], "conclusion": "La marca es icónica y altamente conversada, pero opera en un terreno polarizado donde el precio/valor, la consistencia del sabor, los medios de pago y la experiencia operativa generan fricción. Prioridades tácticas: 1) habilitar pagos con tarjeta/QR, 2) recalibrar y estandarizar recetas (en especial tigrillo/bolón) con control de temperatura y salado, 3) ajustar la propuesta de valor (porciones, combos y políticas de delivery/ají), 4) fortalecer el discurso de inclusión y emprendimiento con respuestas empáticas y 5) capitalizar la viralidad con activaciones y ofertas por canal. Ejecutar estas mejoras debería elevar satisfacción, reducir la conversación negativa y sostener el crecimiento sin sacrificar autenticidad."}
+        };
+
+        // ========== HELPER FUNCTIONS ==========
+        function formatNumber(num) {
+            if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+            if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
+            return num.toFixed(1);
+        }
+
+        function getColorForValue(value, min, max) {
+            const normalized = (value - min) / (max - min);
+            if (normalized > 0.66) return `rgba(111, 78, 55, ${0.3 + normalized * 0.7})`;
+            if (normalized > 0.33) return `rgba(160, 130, 109, ${0.3 + normalized * 0.7})`;
+            return `rgba(152, 216, 200, ${0.3 + normalized * 0.7})`;
+        }
+
+        function getCorrColor(value) {
+            if (value === 1) return 'rgba(111, 78, 55, 1)';
+            if (value > 0.5) return 'rgba(111, 78, 55, 0.8)';
+            if (value > 0.2) return 'rgba(160, 130, 109, 0.7)';
+            if (value > -0.2) return 'rgba(152, 216, 200, 0.5)';
+            if (value > -0.5) return 'rgba(152, 216, 200, 0.7)';
+            return 'rgba(152, 216, 200, 0.9)';
+        }
+
+        const topicIcons = ['💰', '⭐', '💳', '🏪', '🚚', '📢', '🏆', '🍽️', '🎯', '📈', '🏷️', '📚', '🔬', '📍', '🎪'];
+        const priorityLevels = ['high', 'high', 'high', 'medium', 'medium', 'high', 'medium', 'high', 'medium', 'medium', 'medium', 'low', 'low', 'low', 'medium'];
+
+        // ========== RENDER FUNCTIONS ==========
+        function renderTopTweets() {
+            const container = document.getElementById('topTweets');
+            const tweets = Object.keys(data.engagement_matrix.text).map(key => ({
+                text: data.engagement_matrix.text[key],
+                favorites: data.engagement_matrix.favorite_count[key],
+                retweets: data.engagement_matrix.retweet_count[key],
+                engagement: data.engagement_matrix.total_engagement[key]
+            }));
+
+            tweets.sort((a, b) => b.engagement - a.engagement);
+
+            container.innerHTML = tweets.slice(0, 10).map((tweet, i) => `
+                <div class="tweet-card" style="animation-delay: ${i * 0.05}s">
+                    <div style="display: flex; align-items: flex-start; gap: var(--spacing-sm);">
+                        <span class="tweet-rank">${i + 1}</span>
+                        <div style="flex: 1;">
+                            <div class="tweet-text">${tweet.text.length > 150 ? tweet.text.substring(0, 150) + '...' : tweet.text}</div>
+                            <div class="tweet-metrics">
+                                <div class="tweet-metric">
+                                    ❤️ <strong>${Math.round(tweet.favorites)}</strong> me gusta
+                                </div>
+                                <div class="tweet-metric">
+                                    🔄 <strong>${Math.round(tweet.retweets)}</strong> compartidos
+                                </div>
+                                <div class="tweet-metric">
+                                    📊 <strong>${tweet.engagement.toFixed(1)}</strong> engagement
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderStatsTable() {
+            const table = document.getElementById('statsTable');
+            const metrics = ['favorite_count', 'retweet_count', 'user.followers_count', 'user.friends_count'];
+            const labels = ['Favoritos', 'Retweets', 'Seguidores', 'Amigos'];
+            const stats = ['mean', 'std', 'min', 'max'];
+            const statLabels = ['Media', 'Desv. Estándar', 'Mínimo', 'Máximo'];
+
+            let html = '<thead><tr><th>Métrica</th>';
+            statLabels.forEach(label => html += `<th>${label}</th>`);
+            html += '</tr></thead><tbody>';
+
+            metrics.forEach((metric, i) => {
+                html += `<tr><td><strong>${labels[i]}</strong></td>`;
+                stats.forEach(stat => {
+                    const value = data.describe_matrix[stat][metric];
+                    html += `<td>${formatNumber(value)}</td>`;
+                });
+                html += '</tr>';
+            });
+
+            html += '</tbody>';
+            table.innerHTML = html;
+        }
+
+        function renderCorrMatrix() {
+            const container = document.getElementById('corrMatrix');
+            const vars = ['user.followers_count', 'user.friends_count', 'id', 'favorite_count', 'retweet_count'];
+            const labels = ['Seguidores', 'Amigos', 'ID', 'Favoritos', 'Retweets'];
+
+            let html = '<div class="corr-label"></div>';
+            labels.forEach(label => html += `<div class="corr-label">${label}</div>`);
+
+            vars.forEach((var1, i) => {
+                html += `<div class="corr-label">${labels[i]}</div>`;
+                vars.forEach(var2 => {
+                    const value = data.corr_matrix[var1][var2];
+                    const color = getCorrColor(value);
+                    html += `<div class="corr-cell" style="background: ${color}; color: ${value > 0.5 || value < -0.5 ? 'white' : '#333'}" 
+                             onmouseover="showTooltip(event, '${value.toFixed(3)}')" 
+                             onmouseout="hideTooltip()">${value.toFixed(2)}</div>`;
+                });
+            });
+
+            container.innerHTML = html;
+        }
+
+        function renderHeatmap() {
+            const container = document.getElementById('heatmapContainer');
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            const dayLabels = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+            const hours = Array.from({length: 24}, (_, i) => i + '.0');
+
+            const allValues = [];
+            days.forEach(day => {
+                hours.forEach(hour => {
+                    const val = data.heatmap[day][hour];
+                    if (val !== -1) allValues.push(val);
+                });
+            });
+            const maxVal = Math.max(...allValues);
+            const minVal = Math.min(...allValues);
+
+            let html = '<div class="heatmap">';
+            html += '<div class="heatmap-row"><div class="heatmap-label"></div>';
+            for (let h = 0; h < 24; h++) {
+                html += `<div class="heatmap-header">${h}h</div>`;
+            }
+            html += '</div>';
+
+            days.forEach((day, idx) => {
+                html += '<div class="heatmap-row">';
+                html += `<div class="heatmap-label">${dayLabels[idx]}</div>`;
+                hours.forEach(hour => {
+                    const value = data.heatmap[day][hour];
+                    if (value === -1) {
+                        html += '<div class="heatmap-cell" style="background: #f0f0f0; color: #ccc">-</div>';
+                    } else {
+                        const color = getColorForValue(value, minVal, maxVal);
+                        html += `<div class="heatmap-cell" style="background: ${color}; color: ${value > maxVal * 0.6 ? 'white' : '#333'}" 
+                                 onmouseover="showTooltip(event, 'Actividad: ${Math.round(value)}')" 
+                                 onmouseout="hideTooltip()">${Math.round(value)}</div>`;
+                    }
+                });
+                html += '</div>';
+            });
+            html += '</div>';
+
+            container.innerHTML = html;
+        }
+
+        function renderTopics() {
+            const container = document.getElementById('topicsContainer');
+            const topics = data.topics.topics;
+
+            container.innerHTML = topics.map((topic, i) => `
+                <div class="card topic-card fade-in" style="animation-delay: ${i * 0.05}s">
+                    <div class="topic-header" onclick="toggleTopic(${i})">
+                        <div class="topic-icon">${topicIcons[i]}</div>
+                        <div class="topic-title">${topic.title || topic['+title']}</div>
+                        <div class="topic-toggle" id="toggle-${i}">▼</div>
+                    </div>
+                    <div class="topic-detail" id="detail-${i}">
+                        <p class="topic-description">${topic.detail}</p>
+                        <div class="topic-challenge">
+                            <div class="topic-challenge-label">💡 Acción Recomendada:</div>
+                            ${topic.challenge}
+                        </div>
+                        <span class="priority-badge priority-${priorityLevels[i]}">
+                            Prioridad ${priorityLevels[i] === 'high' ? 'Alta' : priorityLevels[i] === 'medium' ? 'Media' : 'Baja'}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderConclusion() {
+            document.getElementById('conclusionText').textContent = data.topics.conclusion.split('Prioridades tácticas:')[0].trim();
+            
+            const priorities = [
+                'Habilitar pagos con tarjeta/QR',
+                'Recalibrar y estandarizar recetas (tigrillo/bolón)',
+                'Ajustar propuesta de valor (porciones, combos, delivery)',
+                'Fortalecer discurso de inclusión y emprendimiento',
+                'Capitalizar viralidad con activaciones por canal'
+            ];
+
+            document.getElementById('priorityList').innerHTML = priorities.map(p => `<li>${p}</li>`).join('');
+        }
+
+        // ========== INTERACTION FUNCTIONS ==========
+        function toggleTopic(index) {
+            const detail = document.getElementById(`detail-${index}`);
+            const toggle = document.getElementById(`toggle-${index}`);
+            
+            detail.classList.toggle('expanded');
+            toggle.classList.toggle('expanded');
+        }
+
+        function showTooltip(event, text) {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.textContent = text;
+            tooltip.style.left = event.pageX + 10 + 'px';
+            tooltip.style.top = event.pageY - 30 + 'px';
+            tooltip.classList.add('show');
+        }
+
+        function hideTooltip() {
+            document.getElementById('tooltip').classList.remove('show');
+        }
+
+        // ========== INITIALIZATION ==========
+        window.addEventListener('DOMContentLoaded', () => {
+            renderTopTweets();
+            renderHeatmap();
+            renderTopics();
+            renderConclusion();
+        });
+    </script>
+</body>
+</html>
